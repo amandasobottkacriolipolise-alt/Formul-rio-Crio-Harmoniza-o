@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+<title>Agende sua avaliação — Dra. Amanda Sobottka</title>
+<style>
+  /* ============================================================
+     VARIÁVEIS FÁCEIS DE TROCAR — cores e espaçamentos
+     ============================================================ */
+  :root{
+    --bg:            #FAF6EF;   /* fundo bege bem claro */
+    --text:          #1E1E1E;   /* texto praticamente preto */
+    --button-bg:     #1E1E1E;   /* botão preto/grafite */
+    --button-text:   #FAF6EF;
+    --accent:        #A8663F;   /* marrom/terracota — barra de progresso, seleção */
+    --card-border:   #E2D8C8;
+    --card-bg:       #FFFFFF;
+    --radius:        0px;       /* tudo quadrado */
+    --max-width:     480px;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0; padding:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100%;
+  }
+
+  button, input{ font-family:inherit; }
+  button{
+    -webkit-appearance:none;
+    appearance:none;
+    border:none;
+    background:none;
+    margin:0;
+  }
+
+  #progress-wrap{
+    position:fixed;
+    top:0; left:0; right:0;
+    height:6px;
+    background:#EAE0D2;
+    z-index:20;
+  }
+  #progress-bar{
+    height:100%;
+    width:0%;
+    background:var(--accent);
+    transition:width .35s ease;
+  }
+
+  .app{
+    max-width:var(--max-width);
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding:56px 24px 32px;
+  }
+
+  .screen{
+    display:none;
+    flex:1;
+    flex-direction:column;
+    justify-content:center;
+    animation:fadeIn .4s ease;
+  }
+  .screen.active{ display:flex; }
+
+  @keyframes fadeIn{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .logo-slot{
+    text-align:center;
+    margin-bottom:20px;
+    min-height:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .logo-slot img{ max-height:48px; max-width:200px; }
+  .logo-slot .logo-placeholder{
+    font-size:13px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#9A8F7E;
+    font-weight:600;
+  }
+
+  .before-after{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin-bottom:24px;
+  }
+  .before-after img{
+    width:48%;
+    height:auto;
+    display:block;
+    background:#E2D8C8;
+  }
+
+  h1.title{
+    font-size:28px;
+    line-height:1.25;
+    text-align:center;
+    margin:0 0 14px;
+    font-weight:600;
+    letter-spacing:-.01em;
+  }
+
+  .subtitle{
+    text-align:center;
+    font-size:16px;
+    line-height:1.5;
+    color:#5A5347;
+    margin:0 0 36px;
+  }
+
+  h2.question{
+    font-size:23px;
+    line-height:1.3;
+    text-align:center;
+    margin:0 0 28px;
+    font-weight:600;
+    letter-spacing:-.01em;
+  }
+
+  .options{
+    display:flex;
+    flex-direction:column;
+    margin-bottom:24px;
+  }
+
+  .option-card{
+    width:100%;
+    border:none;
+    border-bottom:1px solid var(--card-border);
+    background:transparent;
+    padding:16px 2px;
+    font-size:16px;
+    text-align:left;
+    cursor:pointer;
+    color:var(--text);
+    transition:color .15s ease;
+  }
+  .option-card:active{ opacity:.6; }
+  .option-card.selected{
+    color:var(--accent);
+    font-weight:600;
+  }
+  .option-card.selected::after{
+    content:" ✓";
+  }
+
+  input[type="text"], input[type="tel"]{
+    width:100%;
+    padding:16px 18px;
+    font-size:17px;
+    border:1.5px solid var(--card-border);
+    border-radius:var(--radius);
+    background:var(--card-bg);
+    color:var(--text);
+    margin-bottom:24px;
+    outline:none;
+  }
+  input[type="text"]:focus, input[type="tel"]:focus{ border-color:var(--accent); }
+
+  .field-label{
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#8A8074;
+    margin:0 0 8px;
+  }
+
+  .btn{
+    width:100%;
+    padding:17px 20px;
+    font-size:16px;
+    font-weight:600;
+    border:none;
+    border-radius:var(--radius);
+    background:var(--button-bg);
+    color:var(--button-text);
+    cursor:pointer;
+    transition:opacity .2s ease, transform .1s ease;
+  }
+  .btn:active{ transform:scale(.98); }
+  .btn:disabled{
+    opacity:.35;
+    cursor:not-allowed;
+  }
+
+  .final-message{
+    background:var(--card-bg);
+    border:1.5px solid var(--card-border);
+    border-radius:var(--radius);
+    padding:22px;
+    font-size:16px;
+    line-height:1.6;
+    margin-bottom:26px;
+  }
+
+  .consent{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:26px;
+    font-size:14px;
+    line-height:1.5;
+    color:#5A5347;
+  }
+  .consent input{
+    margin-top:3px;
+    width:18px; height:18px;
+    accent-color:var(--accent);
+    flex:0 0 18px;
+  }
+
+  .disclaimer{
+    font-size:13px;
+    line-height:1.55;
+    color:#5A5347;
+    background:#F1EADC;
+    border-left:3px solid var(--accent);
+    padding:12px 14px;
+    margin:-8px 0 24px;
+  }
+
+  .center-text{
+    text-align:center;
+    font-size:16px;
+    line-height:1.6;
+    margin-bottom:28px;
+    color:#5A5347;
+  }
+
+  .footer-note{
+    text-align:center;
+    font-size:12px;
+    color:#9A8F7E;
+    margin-top:20px;
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+
+<div class="app">
+
+  <!-- TELA 0 — CAPA -->
+  <section class="screen active" data-screen="0">
+    <div class="before-after">
+      <!-- Troque pelos nomes reais das fotos, salvas nesta mesma pasta -->
+      <img src="antes-depois-1.jpg" alt="Resultado antes e depois 1">
+      <img src="antes-depois-2.jpg" alt="Resultado antes e depois 2">
+    </div>
+    <h1 class="title">Agende sua avaliação com a Dra. Amanda Sobottka.</h1>
+    <p class="subtitle">Responda algumas perguntas rápidas e a gente vai organizar o seu atendimento.</p>
+    <button class="btn" onclick="goTo(1)">Começar</button>
+  </section>
+
+  <!-- TELA 1 — OBJETIVO -->
+  <section class="screen" data-screen="1">
+    <h2 class="question">O que te trouxe até aqui?</h2>
+    <div class="options" id="options-objetivo"></div>
+    <button class="btn" id="btn-next-1" onclick="goTo(2)" disabled>Continuar</button>
+  </section>
+
+  <!-- TELA 2 — NOME COMPLETO -->
+  <section class="screen" data-screen="2">
+    <h2 class="question">Qual seu nome completo?</h2>
+    <p class="field-label">Nome</p>
+    <input type="text" id="input-nome" placeholder="Seu primeiro nome" oninput="onNomeInput()">
+    <p class="field-label">Sobrenome</p>
+    <input type="text" id="input-sobrenome" placeholder="Seu sobrenome" oninput="onSobrenomeInput()">
+    <button class="btn" id="btn-next-2" onclick="goTo(3)" disabled>Continuar</button>
+  </section>
+
+  <!-- TELA 3 — REGIÃO -->
+  <section class="screen" data-screen="3">
+    <h2 class="question">Qual região mais te incomoda?</h2>
+    <p class="subtitle" style="margin-bottom:20px;font-size:14px;">Pode marcar mais de uma opção.</p>
+    <div class="options" id="options-regiao"></div>
+    <button class="btn" id="btn-next-3" onclick="goTo(4)" disabled>Continuar</button>
+  </section>
+
+  <!-- TELA 4 — ROTINA -->
+  <section class="screen" data-screen="4">
+    <h2 class="question">Hoje, como está a sua rotina?</h2>
+    <div class="options" id="options-rotina"></div>
+    <button class="btn" id="btn-next-4" onclick="goTo(5)" disabled>Continuar</button>
+  </section>
+
+  <!-- TELA 5 — CIDADE -->
+  <section class="screen" data-screen="5">
+    <h2 class="question">Qual a sua cidade?</h2>
+    <input type="text" id="input-cidade" placeholder="Digite sua cidade" oninput="onCidadeInput()">
+    <button class="btn" id="btn-next-5" onclick="goTo(6)" disabled>Continuar</button>
+  </section>
+
+  <!-- TELA 6 — QUANDO PRETENDE INICIAR -->
+  <section class="screen" data-screen="6">
+    <h2 class="question">Quando você pretende iniciar seu tratamento?</h2>
+    <div class="options" id="options-inicio"></div>
+    <button class="btn" id="btn-next-6" onclick="goTo(7)" disabled>Continuar</button>
+  </section>
+
+  <!-- TELA 7 — TELEFONE / WHATSAPP -->
+  <section class="screen" data-screen="7">
+    <h2 class="question">Qual o melhor WhatsApp pra confirmarmos sua avaliação com a Dra. Amanda?</h2>
+    <input type="tel" id="input-telefone" placeholder="(00) 00000-0000" oninput="onTelefoneInput()">
+    <div class="disclaimer">A avaliação com a Dra. Amanda tem um investimento — mas se você fechar o protocolo, esse valor é 100% abatido do tratamento. Procedimento sem corte, sem anestesia geral e sem internação.</div>
+    <button class="btn" id="btn-next-7" onclick="goTo(8)" disabled>Continuar</button>
+  </section>
+
+  <!-- TELA 8 — MENSAGEM ADAPTATIVA + CONSENTIMENTO -->
+  <section class="screen" data-screen="8">
+    <h2 class="question" id="final-headline">Perfeito!</h2>
+    <div class="final-message" id="final-message-text"></div>
+    <label class="consent">
+      <input type="checkbox" id="input-consent" onchange="onConsentChange()">
+      <span>Autorizo o contato da equipe da Dra. Amanda Sobottka sobre a minha avaliação.</span>
+    </label>
+    <button class="btn" id="btn-submit" onclick="onSubmit()" disabled>Quero organizar meu atendimento</button>
+  </section>
+
+  <!-- TELA 9 — ÚLTIMO PASSO -->
+  <section class="screen" data-screen="9">
+    <h2 class="question">Último passo</h2>
+    <p class="center-text">Clique no botão abaixo para abrir o WhatsApp. Envie a mensagem como aparece.</p>
+    <button class="btn" onclick="abrirWhatsApp()">Abrir o WhatsApp</button>
+    <p class="footer-note">Se o WhatsApp não abrir automaticamente, toque no botão novamente.</p>
+  </section>
+
+</div>
+
+<script>
+/* ================================================================
+   CONFIGURAÇÃO — TROQUE AQUI
+   ================================================================ */
+const CONFIG = {
+  // Número de WhatsApp da clínica, formato internacional sem símbolos (55 + DDD + número)
+  whatsappNumber: "5519996390156",
+
+  // URL do Google Apps Script Web App (cole aqui depois de publicar — ver guia de instalação)
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbwzDqFrXVRXAcM2P8Sa-hhK0PMk460x2A6Yg04gurXzc9yCChCIZvJk313I4RRkCfjr/exec",
+};
+
+/* ================================================================
+   DADOS DAS PERGUNTAS
+   ================================================================ */
+const OBJETIVO_OPCOES = [
+  { value: "localizada", label: "Tenho uma gordura localizada que não sai nem com esforço" },
+  { value: "emagrecer",  label: "Quero emagrecer / estou começando a cuidar do corpo" },
+  { value: "pesquisando",label: "Ainda estou pesquisando" },
+];
+
+const REGIAO_OPCOES = [
+  "Abdômen", "Flanco", "Culote", "Coxa (interna/externa)",
+  "Braço", "Papada", "Costas", "Quero uma avaliação geral",
+];
+
+const ROTINA_OPCOES = [
+  { value: "treino_alimentacao", label: "Já treino e cuido da alimentação" },
+  { value: "treino_sem_dieta",   label: "Treino, mas não cuido da alimentação" },
+  { value: "sem_constancia",     label: "Faço um pouco, mas sem constância" },
+  { value: "nao_comecei",        label: "Ainda não comecei" },
+  { value: "ja_fiz_procedimento",label: "Já fiz Crio ou outro procedimento estético antes" },
+];
+
+const INICIO_OPCOES = [
+  { value: "assim_que_possivel", label: "Assim que possível / já quero começar" },
+  { value: "proximas_semanas",   label: "Nas próximas semanas" },
+  { value: "decidindo",          label: "Ainda estou decidindo / só pesquisando" },
+];
+
+const MENSAGENS_FINAIS = {
+  localizada: "Perfeito! A Crio foi desenhada exatamente pra isso: a gordura localizada que resiste mesmo quando você se cuida. Vamos organizar sua avaliação com a Dra. Amanda?",
+  emagrecer: "Amei que você decidiu se priorizar! Na avaliação com a Dra. Amanda a gente entende o seu momento e te mostra o caminho ideal pra você. Vamos organizar seu atendimento?",
+  pesquisando: "Que bom te ter por aqui! A avaliação com a Dra. Amanda é sem compromisso — é o momento de tirar todas as suas dúvidas. Quer garantir seu horário?",
+};
+
+/* ================================================================
+   ESTADO
+   ================================================================ */
+const state = {
+  objetivo: null,
+  objetivoLabel: null,
+  nome: "",
+  sobrenome: "",
+  regioes: [],
+  rotina: null,
+  rotinaLabel: null,
+  cidade: "",
+  inicio: null,
+  inicioLabel: null,
+  telefone: "",
+  consentimento: false,
+};
+
+const TOTAL_STEPS = 9; // telas 1 a 9 contam para a barra de progresso
+
+/* ================================================================
+   NAVEGAÇÃO
+   ================================================================ */
+function goTo(screenIndex){
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  const next = document.querySelector('.screen[data-screen="' + screenIndex + '"]');
+  next.classList.add("active");
+
+  const pct = screenIndex === 0 ? 0 : Math.min(screenIndex / TOTAL_STEPS, 1) * 100;
+  document.getElementById("progress-bar").style.width = pct + "%";
+
+  if (screenIndex === 8){ renderFinalScreen(); }
+
+  window.scrollTo(0,0);
+}
+
+/* ================================================================
+   RENDER — OPÇÕES DE ESCOLHA ÚNICA / MÚLTIPLA
+   ================================================================ */
+function renderSingleChoice(containerId, opcoes, onSelect){
+  const el = document.getElementById(containerId);
+  el.innerHTML = "";
+  opcoes.forEach(op => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "option-card";
+    card.textContent = op.label;
+    card.onclick = () => {
+      el.querySelectorAll(".option-card").forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+      onSelect(op);
+    };
+    el.appendChild(card);
+  });
+}
+
+function renderMultiChoice(containerId, opcoesLabels, onChange){
+  const el = document.getElementById(containerId);
+  el.innerHTML = "";
+  const selecionadas = new Set();
+  opcoesLabels.forEach(label => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "option-card multi";
+    card.textContent = label;
+    card.onclick = () => {
+      if (selecionadas.has(label)){
+        selecionadas.delete(label);
+        card.classList.remove("selected");
+      } else {
+        selecionadas.add(label);
+        card.classList.add("selected");
+      }
+      onChange(Array.from(selecionadas));
+    };
+    el.appendChild(card);
+  });
+}
+
+renderSingleChoice("options-objetivo", OBJETIVO_OPCOES, (op) => {
+  state.objetivo = op.value;
+  state.objetivoLabel = op.label;
+  document.getElementById("btn-next-1").disabled = false;
+});
+
+renderMultiChoice("options-regiao", REGIAO_OPCOES, (selecionadas) => {
+  state.regioes = selecionadas;
+  document.getElementById("btn-next-3").disabled = selecionadas.length === 0;
+});
+
+renderSingleChoice("options-rotina", ROTINA_OPCOES, (op) => {
+  state.rotina = op.value;
+  state.rotinaLabel = op.label;
+  document.getElementById("btn-next-4").disabled = false;
+});
+
+renderSingleChoice("options-inicio", INICIO_OPCOES, (op) => {
+  state.inicio = op.value;
+  state.inicioLabel = op.label;
+  document.getElementById("btn-next-6").disabled = false;
+});
+
+function onNomeInput(){
+  state.nome = document.getElementById("input-nome").value.trim();
+  checkNomeCompleto();
+}
+
+function onSobrenomeInput(){
+  state.sobrenome = document.getElementById("input-sobrenome").value.trim();
+  checkNomeCompleto();
+}
+
+function checkNomeCompleto(){
+  const ok = state.nome.length > 0 && state.sobrenome.length > 0;
+  document.getElementById("btn-next-2").disabled = !ok;
+}
+
+function onCidadeInput(){
+  const v = document.getElementById("input-cidade").value.trim();
+  state.cidade = v;
+  document.getElementById("btn-next-5").disabled = v.length === 0;
+}
+
+function onTelefoneInput(){
+  const v = document.getElementById("input-telefone").value.trim();
+  state.telefone = v;
+  const digits = v.replace(/\D/g, "");
+  document.getElementById("btn-next-7").disabled = digits.length < 8;
+}
+
+function onConsentChange(){
+  state.consentimento = document.getElementById("input-consent").checked;
+  document.getElementById("btn-submit").disabled = !state.consentimento;
+}
+
+/* ================================================================
+   TELA FINAL ADAPTATIVA (roteamento respeitando o posicionamento da Crio)
+   ================================================================ */
+function renderFinalScreen(){
+  const texto = MENSAGENS_FINAIS[state.objetivo] || MENSAGENS_FINAIS.pesquisando;
+  document.getElementById("final-message-text").textContent = texto;
+}
+
+/* ================================================================
+   MONTAGEM DA MENSAGEM DO WHATSAPP
+   ================================================================ */
+function montarMensagemWhatsapp(){
+  const linhas = [
+    "Oi! Vim pelo site da Amanda Sobottka e quero agendar minha avaliação!",
+    "Nome: " + state.nome + " " + state.sobrenome,
+    "Cidade: " + state.cidade,
+    "Objetivo: " + state.objetivoLabel,
+    "Região que mais me incomoda: " + state.regioes.join(", "),
+    "Minha rotina hoje: " + state.rotinaLabel,
+    "Quando pretendo iniciar: " + state.inicioLabel,
+  ];
+  return linhas.join("\n");
+}
+
+function montarUrlWhatsapp(){
+  const texto = encodeURIComponent(montarMensagemWhatsapp());
+  return "https://wa.me/" + CONFIG.whatsappNumber + "?text=" + texto;
+}
+
+/* ================================================================
+   GRAVAÇÃO NA PLANILHA (Google Apps Script)
+   ================================================================ */
+function salvarNaPlanilha(){
+  try {
+    if (!CONFIG.appsScriptUrl || CONFIG.appsScriptUrl.indexOf("COLE_AQUI") !== -1){
+      console.warn("APPS_SCRIPT_URL não configurada — lead não foi salvo na planilha.");
+      return;
+    }
+    const payload = {
+      nome: state.nome,
+      sobrenome: state.sobrenome,
+      telefone: state.telefone,
+      cidade: state.cidade,
+      objetivo: state.objetivoLabel,
+      regioes: state.regioes.join(", "),
+      rotina: state.rotinaLabel,
+      inicio: state.inicioLabel,
+      consentimento: state.consentimento,
+    };
+    fetch(CONFIG.appsScriptUrl, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload),
+    });
+  } catch (err){
+    console.error("Falha ao salvar na planilha:", err);
+  }
+}
+
+/* ================================================================
+   ENVIO — dispara gravação + abertura do WhatsApp ao mesmo tempo
+   ================================================================ */
+function onSubmit(){
+  if (!state.consentimento) return;
+
+  salvarNaPlanilha();       // (1) grava o lead — não trava o fluxo mesmo se falhar
+  abrirWhatsApp();          // (2) abre o WhatsApp
+
+  goTo(9);
+}
+
+function abrirWhatsApp(){
+  const url = montarUrlWhatsapp();
+  window.open(url, "_blank") || (window.location.href = url);
+}
+</script>
+
+</body>
+</html>
