@@ -135,9 +135,6 @@ function doGet(e) {
   if (acao === "atualizarStatus") {
     return respostaJson(atualizarStatusLead(e), callback);
   }
-  if (acao === "excluir") {
-    return respostaJson(excluirLead(e), callback);
-  }
 
   return ContentService.createTextOutput("Formulário Crio Harmonização — endpoint ativo.");
 }
@@ -214,26 +211,6 @@ function atualizarStatusLead(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEET_LEADS);
     sheet.getRange(linha, COL_STATUS).setValue(novoStatus);
-    return { status: "ok" };
-  } catch (err) {
-    return { status: "error", message: String(err) };
-  }
-}
-
-/* Exclui de vez a linha de um lead (ex.: cadastro de teste, duplicado,
-   spam). Ação irreversível — a confirmação acontece no painel HTML. */
-function excluirLead(e) {
-  if (!senhaValida(e)) {
-    return { status: "error", message: "Senha incorreta." };
-  }
-  try {
-    const linha = parseInt(e.parameter.linha, 10);
-    if (!linha || linha < 2) {
-      return { status: "error", message: "Linha inválida." };
-    }
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName(SHEET_LEADS);
-    sheet.deleteRow(linha);
     return { status: "ok" };
   } catch (err) {
     return { status: "error", message: String(err) };
