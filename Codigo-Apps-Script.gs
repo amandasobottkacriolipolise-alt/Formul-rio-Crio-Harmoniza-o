@@ -30,11 +30,15 @@ const SHEET_PAINEL = "Painel";
 // Ordem das colunas na aba Leads
 // A=Data/Hora B=Nome C=Sobrenome D=Telefone E=Cidade F=Objetivo
 // G=Região(ões) H=Rotina I=Quando pretende iniciar J=Consentimento K=Status
+// L=Observações M=Próximo Contato
 const CABECALHO_LEADS = [
   "Data/Hora", "Nome", "Sobrenome", "Telefone", "Cidade",
-  "Objetivo", "Região(ões)", "Rotina", "Quando pretende iniciar", "Consentimento", "Status"
+  "Objetivo", "Região(ões)", "Rotina", "Quando pretende iniciar", "Consentimento", "Status",
+  "Observações", "Próximo Contato"
 ];
 const COL_STATUS = 11; // coluna K
+const COL_OBSERVACOES = 12; // coluna L
+const COL_PROXIMO_CONTATO = 13; // coluna M
 
 // Rótulos usados nas telas do formulário — precisam bater com o HTML
 const OBJETIVOS = [
@@ -104,6 +108,8 @@ function doPost(e) {
       dados.inicio || "",
       dados.consentimento ? "Sim" : "Não",
       "Novo", // status inicial — a atendente vai atualizando conforme fala com o lead
+      "", // Observações — preenchida depois, pelo painel
+      "", // Próximo Contato — preenchida depois, pelo painel
     ]);
 
     return ContentService
@@ -138,6 +144,9 @@ function doGet(e) {
   if (acao === "excluir") {
     return respostaJson(excluirLead(e), callback);
   }
+  if (acao === "atualizarObservacoes") {
+    return respostaJson(atualizarObservacoesLead(e), callback);
+  }
 
   return ContentService.createTextOutput("Formulário Crio Harmonização — endpoint ativo.");
 }
@@ -156,6 +165,17 @@ function respostaJson(obj, callback) {
 
 function senhaValida(e) {
   return !!(e.parameter && e.parameter.senha === SENHA_PAINEL);
+}
+
+/* Formata uma data como YYYY-MM-DD (mesmo formato do <input type="date">
+   do painel), usando o fuso horário da própria planilha. */
+function formatarDataISO(data) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    return Utilities.formatDate(data, ss.getSpreadsheetTimeZone(), "yyyy-MM-dd");
+  } catch (err) {
+    return "";
+  }
 }
 
 /* Devolve todos os leads da aba "Leads" em JSON, cada um com o número
@@ -189,6 +209,8 @@ function listarLeadsParaPainel(e) {
         inicio: linha[8],
         consentimento: linha[9],
         status: linha[10] || "Novo",
+        observacoes: linha[11] || "",
+        proximoContato: linha[12] instanceof Date ? formatarDataISO(linha[12]) : String(linha[12] || ""),
       });
     });
 
@@ -214,6 +236,31 @@ function atualizarStatusLead(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEET_LEADS);
     sheet.getRange(linha, COL_STATUS).setValue(novoStatus);
+    return { status: "ok" };
+  } catch (err) {
+    return { status: "error", message: String(err) };
+  }
+}
+
+/* Salva a observação livre e a data do próximo contato de um lead —
+   preenchidas pela atendente ao clicar no card, no painel HTML. A data
+   chega como texto "YYYY-MM-DD" (do <input type="date">) e é gravada
+   como texto puro, sem deixar o Sheets tentar reformatar sozinho. */
+function atualizarObservacoesLead(e) {
+  if (!senhaValida(e)) {
+    return { status: "error", message: "Senha incorreta." };
+  }
+  try {
+    const linha = parseInt(e.parameter.linha, 10);
+    if (!linha || linha < 2) {
+      return { status: "error", message: "Linha inválida." };
+    }
+    const observacoes = e.parameter.observacoes || "";
+    const proximoContato = e.parameter.proximoContato || "";
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEET_LEADS);
+    sheet.getRange(linha, COL_OBSERVACOES).setValue(observacoes);
+    sheet.getRange(linha, COL_PROXIMO_CONTATO).setNumberFormat("@").setValue(proximoContato);
     return { status: "ok" };
   } catch (err) {
     return { status: "error", message: String(err) };
