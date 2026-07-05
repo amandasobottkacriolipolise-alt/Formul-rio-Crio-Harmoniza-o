@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
-<title>Agende sua avaliação — Doutora Amanda Sobottka</title>
+<title>Agende sua avaliação — Dra. Amanda Sobottka</title>
 <style>
   /* ============================================================
      VARIÁVEIS FÁCEIS DE TROCAR — cores e espaçamentos
@@ -102,9 +102,8 @@
     margin-bottom:24px;
   }
   .before-after img{
-    width:31%;
-    aspect-ratio:3/4;
-    object-fit:cover;
+    width:48%;
+    height:auto;
     display:block;
     background:#E2D8C8;
   }
@@ -114,7 +113,7 @@
     line-height:1.25;
     text-align:center;
     margin:0 0 14px;
-    font-weight:700;
+    font-weight:600;
     letter-spacing:-.01em;
   }
 
@@ -131,7 +130,7 @@
     line-height:1.3;
     text-align:center;
     margin:0 0 28px;
-    font-weight:700;
+    font-weight:600;
     letter-spacing:-.01em;
   }
 
@@ -156,7 +155,7 @@
   .option-card:active{ opacity:.6; }
   .option-card.selected{
     color:var(--accent);
-    font-weight:700;
+    font-weight:600;
   }
   .option-card.selected::after{
     content:" ✓";
@@ -262,15 +261,14 @@
   <!-- TELA 0 — CAPA -->
   <section class="screen active" data-screen="0">
     <div class="logo-slot">
-      <span class="logo-placeholder">DOUTORA AMANDA SOBOTTKA</span>
+      <span class="logo-placeholder">DRA. AMANDA SOBOTTKA</span>
     </div>
     <div class="before-after">
       <!-- Troque pelos nomes reais das fotos, salvas nesta mesma pasta -->
       <img src="antes-depois-1.jpg" alt="Resultado antes e depois 1">
       <img src="antes-depois-2.jpg" alt="Resultado antes e depois 2">
-      <img src="antes-depois-3.jpg" alt="Resultado antes e depois 3">
     </div>
-    <h1 class="title">Agende sua avaliação com a Doutora Amanda Sobottka.</h1>
+    <h1 class="title">Agende sua avaliação com a Dra. Amanda Sobottka.</h1>
     <p class="subtitle">Responda algumas perguntas rápidas e a gente vai organizar o seu atendimento.</p>
     <button class="btn" onclick="goTo(1)">Começar</button>
   </section>
@@ -323,9 +321,9 @@
 
   <!-- TELA 7 — TELEFONE / WHATSAPP -->
   <section class="screen" data-screen="7">
-    <h2 class="question">Qual o melhor WhatsApp pra confirmarmos sua avaliação com a Doutora Amanda?</h2>
+    <h2 class="question">Qual o melhor WhatsApp pra confirmarmos sua avaliação com a Dra. Amanda?</h2>
     <input type="tel" id="input-telefone" placeholder="(00) 00000-0000" oninput="onTelefoneInput()">
-    <div class="disclaimer">A avaliação com a Doutora Amanda tem um investimento — mas se você fechar o protocolo, esse valor é 100% abatido do tratamento. Procedimento sem corte, sem anestesia geral e sem internação.</div>
+    <div class="disclaimer">A avaliação com a Dra. Amanda tem um investimento — mas se você fechar o protocolo, esse valor é 100% abatido do tratamento. Procedimento sem corte, sem anestesia geral e sem internação.</div>
     <button class="btn" id="btn-next-7" onclick="goTo(8)" disabled>Continuar</button>
   </section>
 
@@ -335,7 +333,7 @@
     <div class="final-message" id="final-message-text"></div>
     <label class="consent">
       <input type="checkbox" id="input-consent" onchange="onConsentChange()">
-      <span>Autorizo o contato da equipe da Doutora Amanda Sobottka sobre a minha avaliação.</span>
+      <span>Autorizo o contato da equipe da Dra. Amanda Sobottka sobre a minha avaliação.</span>
     </label>
     <button class="btn" id="btn-submit" onclick="onSubmit()" disabled>Quero organizar meu atendimento</button>
   </section>
@@ -391,9 +389,9 @@ const INICIO_OPCOES = [
 ];
 
 const MENSAGENS_FINAIS = {
-  localizada: "Perfeito 💛 A Crio foi desenhada exatamente pra isso: a gordura localizada que resiste mesmo quando você se cuida. Vamos organizar sua avaliação com a Doutora Amanda?",
-  emagrecer: "Amei que você decidiu se priorizar 💛 Na avaliação com a Doutora Amanda a gente entende o seu momento e te mostra o caminho ideal pra você. Vamos organizar seu atendimento?",
-  pesquisando: "Que bom te ter por aqui 💛 A avaliação com a Doutora Amanda é sem compromisso — é o momento de tirar todas as suas dúvidas. Quer garantir seu horário?",
+  localizada: "Perfeito! A Crio foi desenhada exatamente pra isso: a gordura localizada que resiste mesmo quando você se cuida. Vamos organizar sua avaliação com a Dra. Amanda?",
+  emagrecer: "Amei que você decidiu se priorizar! Na avaliação com a Dra. Amanda a gente entende o seu momento e te mostra o caminho ideal pra você. Vamos organizar seu atendimento?",
+  pesquisando: "Que bom te ter por aqui! A avaliação com a Dra. Amanda é sem compromisso — é o momento de tirar todas as suas dúvidas. Quer garantir seu horário?",
 };
 
 /* ================================================================
@@ -544,7 +542,7 @@ function renderFinalScreen(){
    ================================================================ */
 function montarMensagemWhatsapp(){
   const linhas = [
-    "Oi! Vim pelo site da Amanda Sobottka e quero agendar minha avaliação 💛",
+    "Oi! Vim pelo site da Amanda Sobottka e quero agendar minha avaliação!",
     "Nome: " + state.nome + " " + state.sobrenome,
     "Cidade: " + state.cidade,
     "Objetivo: " + state.objetivoLabel,
