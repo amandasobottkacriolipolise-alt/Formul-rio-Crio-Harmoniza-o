@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Painel de Leads — Crio Harmonização</title>
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+<style>
+  :root{
+    --bg:            #FAF6EF;
+    --text:          #1E1E1E;
+    --accent:        #A8663F;
+    --card-bg:       #FFFFFF;
+    --border:        #E4DCCB;
+    --radius:        0px;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{
+    margin:0; padding:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  button, input, select{ font-family:inherit; -webkit-appearance:none; appearance:none; }
+  button{ cursor:pointer; }
+
+  /* ---------- Tela de senha ---------- */
+  #tela-senha{
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+  }
+  .caixa-senha{
+    width:100%; max-width:360px;
+    text-align:center;
+  }
+  .caixa-senha h1{
+    font-size:20px; font-weight:600; margin:0 0 6px;
+  }
+  .caixa-senha p{
+    font-size:14px; color:#6B6B6B; margin:0 0 20px;
+  }
+  .caixa-senha input[type="password"]{
+    width:100%;
+    padding:14px 12px;
+    font-size:16px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    background:#fff;
+    color:var(--text);
+    margin-bottom:12px;
+  }
+  .caixa-senha input:focus{ outline:none; border-color:var(--accent); }
+  .caixa-senha button{
+    width:100%;
+    padding:14px;
+    background:var(--text);
+    color:#fff;
+    border:none;
+    border-radius:var(--radius);
+    font-size:15px;
+    font-weight:600;
+  }
+  .erro-senha{
+    color:#B3261E; font-size:13px; margin-top:10px; display:none;
+  }
+
+  /* ---------- App principal ---------- */
+  #app{ display:none; min-height:100vh; }
+
+  header{
+    position:sticky; top:0; z-index:20;
+    background:var(--bg);
+    border-bottom:1px solid var(--border);
+    padding:14px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    flex-wrap:wrap;
+  }
+  header h1{
+    font-size:16px; font-weight:600; margin:0;
+    color:var(--accent);
+  }
+  header .sub{ font-size:12px; color:#6B6B6B; margin-top:2px; }
+  .header-right{ display:flex; align-items:center; gap:8px; }
+  #busca{
+    padding:9px 10px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    font-size:13px;
+    width:150px;
+    background:#fff;
+  }
+  #busca:focus{ outline:none; border-color:var(--accent); }
+  #btn-atualizar{
+    padding:9px 12px;
+    background:var(--text);
+    color:#fff;
+    border:none;
+    border-radius:var(--radius);
+    font-size:13px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  #btn-atualizar:disabled{ opacity:.5; }
+
+  .resumo{
+    display:flex; gap:10px; padding:12px 16px 0; flex-wrap:wrap;
+  }
+  .resumo .chip{
+    font-size:12px; font-weight:600;
+    padding:6px 10px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    white-space:nowrap;
+  }
+
+  #board{
+    display:flex;
+    gap:12px;
+    padding:16px;
+    overflow-x:auto;
+    align-items:flex-start;
+  }
+  .coluna{
+    flex:0 0 260px;
+    background:#F2ECDF;
+    border-radius:var(--radius);
+    padding:10px;
+    min-height:120px;
+  }
+  .coluna-titulo{
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    padding:6px 8px;
+    border-radius:var(--radius);
+    margin-bottom:10px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .coluna-titulo .contagem{
+    font-size:11px; font-weight:600; opacity:.7;
+  }
+
+  .card{
+    background:var(--card-bg);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:12px;
+    margin-bottom:10px;
+    font-size:13px;
+  }
+  .card .nome{
+    font-weight:700; font-size:14px; margin-bottom:2px;
+  }
+  .card .linha-info{
+    color:#4A4A4A; margin-bottom:2px; line-height:1.4;
+  }
+  .card .linha-info b{ color:var(--text); font-weight:600; }
+  .card .data{
+    color:#9A9A9A; font-size:11px; margin-top:6px;
+  }
+  .card .acoes{
+    display:flex; gap:6px; margin-top:10px;
+  }
+  .card select{
+    flex:1;
+    padding:8px 6px;
+    font-size:12px;
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    background:#fff;
+    color:var(--text);
+  }
+  .card a.whatsapp{
+    display:flex; align-items:center; justify-content:center;
+    width:36px; height:36px;
+    background:#1E1E1E;
+    color:#fff;
+    border-radius:var(--radius);
+    text-decoration:none;
+    font-size:15px;
+    flex-shrink:0;
+  }
+  .card.salvando{ opacity:.5; pointer-events:none; }
+
+  .vazio{
+    font-size:12px; color:#9A9A9A; text-align:center; padding:16px 4px;
+  }
+
+  #carregando, #erro-geral{
+    padding:40px 16px; text-align:center; color:#6B6B6B; font-size:14px;
+  }
+  #erro-geral{ color:#B3261E; display:none; }
+
+  @media (max-width:480px){
+    #busca{ width:110px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="tela-senha">
+  <div class="caixa-senha">
+    <h1>Painel de Leads</h1>
+    <p>Crio Harmonização — digite a senha de acesso</p>
+    <input type="password" id="input-senha" placeholder="Senha" autocomplete="off">
+    <button id="btn-entrar">Entrar</button>
+    <div class="erro-senha" id="erro-senha">Senha incorreta. Tente novamente.</div>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <div>
+      <h1>Painel de Leads — Crio Harmonização</h1>
+      <div class="sub" id="sub-atualizado">—</div>
+    </div>
+    <div class="header-right">
+      <input type="text" id="busca" placeholder="Buscar nome...">
+      <button id="btn-atualizar">Atualizar</button>
+    </div>
+  </header>
+  <div class="resumo" id="resumo"></div>
+  <div id="carregando">Carregando leads...</div>
+  <div id="erro-geral">Não foi possível carregar os leads. Toque em "Atualizar" pra tentar de novo.</div>
+  <div id="board" style="display:none;"></div>
+</div>
+
+<script>
+/* ==================================================================
+   CONFIGURAÇÃO — cole aqui a mesma URL do Apps Script usada no
+   formulário. A senha é validada no próprio Apps Script (SENHA_PAINEL).
+   ================================================================== */
+const CONFIG = {
+  appsScriptUrl: "https://script.google.com/macros/s/AKfycbwzDqFrXVRXAcM2P8Sa-hhK0PMk460x2A6Yg04gurXzc9yCChCIZvJk313I4RRkCfjr/exec",
+  whatsappNumber: "5519996390156", // não usado pra montar mensagem, cada card usa o telefone do próprio lead
+};
+
+const STATUS_PADRAO = ["Novo", "Em contato", "Avaliação agendada", "Fechou", "Não fechou", "Sem resposta"];
+const STATUS_CORES = {
+  "Novo": "#F1F3F4",
+  "Em contato": "#FFF2CC",
+  "Avaliação agendada": "#C9DAF8",
+  "Fechou": "#D9EAD3",
+  "Não fechou": "#F4CCCC",
+  "Sem resposta": "#FCE5CD",
+};
+
+let senhaAtual = "";
+let leadsAtuais = [];
+let statusOpcoes = STATUS_PADRAO.slice();
+let termoBusca = "";
+
+/* ---------- JSONP helper (evita bloqueio de CORS com o Apps Script) ---------- */
+function chamarJsonp(params){
+  return new Promise(function(resolve, reject){
+    const nomeCallback = "cb_" + Date.now() + "_" + Math.floor(Math.random()*100000);
+    const script = document.createElement("script");
+    let finalizado = false;
+
+    window[nomeCallback] = function(dados){
+      finalizado = true;
+      resolve(dados);
+      delete window[nomeCallback];
+      script.remove();
+    };
+
+    const timeout = setTimeout(function(){
+      if (!finalizado){
+        delete window[nomeCallback];
+        script.remove();
+        reject(new Error("timeout"));
+      }
+    }, 15000);
+
+    const urlParams = new URLSearchParams(params);
+    urlParams.set("callback", nomeCallback);
+    script.src = CONFIG.appsScriptUrl + "?" + urlParams.toString();
+    script.onerror = function(){
+      clearTimeout(timeout);
+      if (!finalizado){ reject(new Error("erro de rede")); }
+    };
+    document.body.appendChild(script);
+  });
+}
+
+/* ---------- Tela de senha ---------- */
+const telaSenha = document.getElementById("tela-senha");
+const appEl = document.getElementById("app");
+const inputSenha = document.getElementById("input-senha");
+const btnEntrar = document.getElementById("btn-entrar");
+const erroSenha = document.getElementById("erro-senha");
+
+function tentarEntrar(){
+  const valor = inputSenha.value.trim();
+  if (!valor){ return; }
+  btnEntrar.disabled = true;
+  btnEntrar.textContent = "Entrando...";
+  erroSenha.style.display = "none";
+
+  chamarJsonp({ acao: "listar", senha: valor }).then(function(resp){
+    btnEntrar.disabled = false;
+    btnEntrar.textContent = "Entrar";
+    if (resp && resp.status === "ok"){
+      senhaAtual = valor;
+      telaSenha.style.display = "none";
+      appEl.style.display = "block";
+      aplicarDados(resp);
+    } else {
+      erroSenha.style.display = "block";
+    }
+  }).catch(function(){
+    btnEntrar.disabled = false;
+    btnEntrar.textContent = "Entrar";
+    erroSenha.textContent = "Não foi possível conectar. Verifique a internet e tente de novo.";
+    erroSenha.style.display = "block";
+  });
+}
+
+btnEntrar.addEventListener("click", tentarEntrar);
+inputSenha.addEventListener("keydown", function(e){ if (e.key === "Enter") tentarEntrar(); });
+
+/* ---------- Carregar / atualizar leads ---------- */
+const elCarregando = document.getElementById("carregando");
+const elErro = document.getElementById("erro-geral");
+const elBoard = document.getElementById("board");
+const elResumo = document.getElementById("resumo");
+const elSubAtualizado = document.getElementById("sub-atualizado");
+const btnAtualizar = document.getElementById("btn-atualizar");
+const inputBusca = document.getElementById("busca");
+
+function buscarLeads(mostrarCarregando){
+  if (mostrarCarregando){
+    elCarregando.style.display = "block";
+    elErro.style.display = "none";
+    elBoard.style.display = "none";
+  }
+  btnAtualizar.disabled = true;
+  btnAtualizar.textContent = "Atualizando...";
+
+  chamarJsonp({ acao: "listar", senha: senhaAtual }).then(function(resp){
+    btnAtualizar.disabled = false;
+    btnAtualizar.textContent = "Atualizar";
+    if (resp && resp.status === "ok"){
+      aplicarDados(resp);
+    } else {
+      elCarregando.style.display = "none";
+      elErro.style.display = "block";
+    }
+  }).catch(function(){
+    btnAtualizar.disabled = false;
+    btnAtualizar.textContent = "Atualizar";
+    elCarregando.style.display = "none";
+    elErro.style.display = "block";
+  });
+}
+
+function aplicarDados(resp){
+  leadsAtuais = resp.leads || [];
+  if (resp.statusOpcoes && resp.statusOpcoes.length){ statusOpcoes = resp.statusOpcoes; }
+  elCarregando.style.display = "none";
+  elErro.style.display = "none";
+  elBoard.style.display = "flex";
+  const agora = new Date();
+  elSubAtualizado.textContent = "Atualizado às " + agora.toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" });
+  renderizar();
+}
+
+/* ---------- Render do board ---------- */
+function formatarTelefone(tel){
+  return String(tel || "").replace(/\D/g, "");
+}
+
+function linkWhatsapp(tel){
+  const numero = formatarTelefone(tel);
+  return numero ? ("https://wa.me/" + numero) : "#";
+}
+
+function escapeHtml(str){
+  return String(str == null ? "" : str)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function formatarData(iso){
+  try{
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString("pt-BR") + " " + d.toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" });
+  } catch(e){ return ""; }
+}
+
+function leadsFiltrados(){
+  if (!termoBusca) return leadsAtuais;
+  const termo = termoBusca.toLowerCase();
+  return leadsAtuais.filter(function(l){
+    const nomeCompleto = ((l.nome||"") + " " + (l.sobrenome||"")).toLowerCase();
+    return nomeCompleto.indexOf(termo) !== -1 || String(l.cidade||"").toLowerCase().indexOf(termo) !== -1;
+  });
+}
+
+function renderizar(){
+  const filtrados = leadsFiltrados();
+
+  // Resumo no topo
+  elResumo.innerHTML = "";
+  const chipTotal = document.createElement("div");
+  chipTotal.className = "chip";
+  chipTotal.textContent = "Total: " + leadsAtuais.length;
+  elResumo.appendChild(chipTotal);
+
+  const fechou = leadsAtuais.filter(function(l){ return l.status === "Fechou"; }).length;
+  const chipTaxa = document.createElement("div");
+  chipTaxa.className = "chip";
+  chipTaxa.textContent = "Fechados: " + fechou + (leadsAtuais.length ? " (" + Math.round(100*fechou/leadsAtuais.length) + "%)" : "");
+  elResumo.appendChild(chipTaxa);
+
+  // Board por coluna de status
+  elBoard.innerHTML = "";
+  statusOpcoes.forEach(function(status){
+    const leadsDoStatus = filtrados.filter(function(l){ return l.status === status; });
+
+    const coluna = document.createElement("div");
+    coluna.className = "coluna";
+
+    const titulo = document.createElement("div");
+    titulo.className = "coluna-titulo";
+    titulo.style.background = STATUS_CORES[status] || "#EEE";
+    titulo.innerHTML = "<span>" + escapeHtml(status) + "</span><span class=\"contagem\">" + leadsDoStatus.length + "</span>";
+    coluna.appendChild(titulo);
+
+    if (!leadsDoStatus.length){
+      const vazio = document.createElement("div");
+      vazio.className = "vazio";
+      vazio.textContent = "Nenhum lead aqui";
+      coluna.appendChild(vazio);
+    }
+
+    // Mais recentes primeiro
+    leadsDoStatus.slice().reverse().forEach(function(lead){
+      coluna.appendChild(criarCard(lead));
+    });
+
+    elBoard.appendChild(coluna);
+  });
+}
+
+function criarCard(lead){
+  const card = document.createElement("div");
+  card.className = "card";
+  card.dataset.linha = lead.linha;
+
+  const nomeCompleto = ((lead.nome||"") + " " + (lead.sobrenome||"")).trim();
+
+  card.innerHTML =
+    "<div class=\"nome\">" + escapeHtml(nomeCompleto || "(sem nome)") + "</div>" +
+    (lead.cidade ? "<div class=\"linha-info\"><b>Cidade:</b> " + escapeHtml(lead.cidade) + "</div>" : "") +
+    (lead.telefone ? "<div class=\"linha-info\"><b>Telefone:</b> " + escapeHtml(lead.telefone) + "</div>" : "") +
+    (lead.objetivo ? "<div class=\"linha-info\"><b>Objetivo:</b> " + escapeHtml(lead.objetivo) + "</div>" : "") +
+    (lead.regioes ? "<div class=\"linha-info\"><b>Região(ões):</b> " + escapeHtml(lead.regioes) + "</div>" : "") +
+    (lead.inicio ? "<div class=\"linha-info\"><b>Quando pretende iniciar:</b> " + escapeHtml(lead.inicio) + "</div>" : "") +
+    "<div class=\"data\">" + escapeHtml(formatarData(lead.dataHora)) + "</div>";
+
+  const acoes = document.createElement("div");
+  acoes.className = "acoes";
+
+  const select = document.createElement("select");
+  statusOpcoes.forEach(function(opcao){
+    const optEl = document.createElement("option");
+    optEl.value = opcao;
+    optEl.textContent = opcao;
+    if (opcao === lead.status) optEl.selected = true;
+    select.appendChild(optEl);
+  });
+  select.addEventListener("change", function(){
+    mudarStatus(lead.linha, select.value, card);
+  });
+  acoes.appendChild(select);
+
+  if (lead.telefone){
+    const link = document.createElement("a");
+    link.className = "whatsapp";
+    link.href = linkWhatsapp(lead.telefone);
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = "💬";
+    link.title = "Abrir WhatsApp";
+    acoes.appendChild(link);
+  }
+
+  card.appendChild(acoes);
+  return card;
+}
+
+function mudarStatus(linha, novoStatus, cardEl){
+  cardEl.classList.add("salvando");
+  chamarJsonp({ acao: "atualizarStatus", senha: senhaAtual, linha: linha, novoStatus: novoStatus }).then(function(resp){
+    if (resp && resp.status === "ok"){
+      const lead = leadsAtuais.find(function(l){ return l.linha === linha; });
+      if (lead) lead.status = novoStatus;
+      renderizar();
+    } else {
+      alert("Não foi possível atualizar o status. Tente de novo.");
+      cardEl.classList.remove("salvando");
+    }
+  }).catch(function(){
+    alert("Erro de conexão ao atualizar o status.");
+    cardEl.classList.remove("salvando");
+  });
+}
+
+btnAtualizar.addEventListener("click", function(){ buscarLeads(false); });
+inputBusca.addEventListener("input", function(){
+  termoBusca = inputBusca.value.trim();
+  renderizar();
+});
+
+// Atualiza sozinho a cada 60s pra manter o painel fresco
+setInterval(function(){
+  if (appEl.style.display === "block"){ buscarLeads(false); }
+}, 60000);
+</script>
+</body>
+</html>
